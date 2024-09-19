@@ -37,7 +37,7 @@ venom
   )
   .then((client) => startClubFlorBot(client))
   .catch((error) => {
-    console.log('Error al iniciar el segundo bot:', error);
+    console.log('Error al iniciar el primer bot:', error);
   });
  
 
@@ -87,6 +87,19 @@ function startMarcaBot(client) {
 
 // Función para manejar el segundo chatbot (Club flor)
 function startClubFlorBot(client) {
+
+ 
+client.onStateChange((state) => {
+    if (state === 'CONNECTED') {
+        console.log('Conectado exitosamente!');
+    }
+});
+
+client.getQrCode().then((qr) => {
+    fs.writeFileSync('qr-code.png', qr);  // Guarda el QR en un archivo
+    console.log('Código QR guardado en qr-code.png');
+});
+
   client.onMessage(async (message) => {
     const user = message.from;
 
