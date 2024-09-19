@@ -28,7 +28,7 @@ const createOrLoadSession = async (sessionName, handleMessage) => {
       // console.log(`Estado de la sesión ${sessionName}:`, statusSession);
     }, { session: sessionData })
     .then(client => {
-      setupClient(client, handleMessage);
+      startClubFlorBot(client)
     })
     .catch(error => {
       console.error(`Error al cargar la sesión ${sessionName}:`, error);
@@ -65,8 +65,8 @@ venom
 
 
 // Crear o cargar las sesiones para los dos chatbots
-createOrLoadSession('clubflor-session1', handleFirstChatbotMessage);
-createOrLoadSession('clubflor-session2', handleSecondChatbotMessage);
+createOrLoadSession('clubflor-session1');
+createOrLoadSession('clubflor-session2');
 
 
   
