@@ -5,13 +5,14 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"  // Para desarrollo continuo
+    "dev": "nodemon app.js"
   },
   "dependencies": {
-    "venom-bot": "^4.0.0"  // La versión de venom-bot que estés usando
+    "fs": "^0.0.1-security",
+    "venom-bot": "^4.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"  // Para recargar automáticamente el bot en modo desarrollo
+    "nodemon": "^2.0.7"
   },
   "author": "",
   "license": "ISC"
