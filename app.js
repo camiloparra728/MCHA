@@ -6,6 +6,7 @@ const venom = require('venom-bot');
 // git push -u origin main
 // git push heroku main   
 // heroku logs --tail
+//git remote set-url origin https://github.com/camiloparra728/MCHA.git
 
 
 // Crear el primer chatbot para "Marca"
@@ -22,11 +23,25 @@ const createOrLoadSession = async (sessionName, handleMessage) => {
     const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
 
     // Carga la sesión existente
-    venom.create(sessionName, (base64Qr, asciiQR, attempt, urlCode) => {
+    venom.create(sessionName, 
+      (base64Qr, asciiQR, attempt, urlCode) => {
        console.log(`QR Code para la sesión ${sessionName}:`, base64Qr);
     }, (statusSession) => {
       // console.log(`Estado de la sesión ${sessionName}:`, statusSession);
-    }, { session: sessionData })
+    },{
+      session: sessionData ,
+      headless: true, // Ejecutar en modo headless (sin interfaz gráfica)
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process', // (Puede que se requiera en algunas implementaciones)
+        '--disable-gpu'
+      ],
+    },)
     .then(client => {
       startClubFlorBot(client)
     })
