@@ -42,8 +42,7 @@ venom
     session: sessionName, // Nombre de la sesión
     multidevice: true, // Si quieres habilitar el modo multidispositivo
     headless: true, // Para evitar que abra una ventana del navegador
-    folderNameToken: 'tokens', // Directorio donde se guardarán los tokens
-    sessionData: sessionData1, // Cargar la sesión si existe
+    folderNameToken: 'tokens', // Directorio donde se guardarán los tokens 
   },
   (base64Qr, asciiQR, attempt, urlCode) => {
     console.log(`QR Code para la sesión ${sessionName}:`, base64Qr);
@@ -83,7 +82,10 @@ client.onStateChange((state) => {
     }
 });
 
-
+client.on('session:save', (session) => {
+  console.log(`Sesión guardada:`, session);
+  fs.writeFileSync(`${session.sessionName}-session.json`, JSON.stringify(session));
+});
 
   client.onMessage(async (message) => {
     const user = message.from;
