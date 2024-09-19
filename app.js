@@ -1,5 +1,13 @@
 const venom = require('venom-bot');
 
+// git add .
+// git commit -m "Initial commit"
+
+// git push -u origin main
+// git push heroku main   
+// heroku logs --tail
+
+
 // Crear el primer chatbot para "Marca"
 const fs = require('fs');
 
@@ -53,6 +61,7 @@ venom
    
   }
 };
+
 
 
 // Crear o cargar las sesiones para los dos chatbots
