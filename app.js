@@ -3,88 +3,67 @@ const venom = require('venom-bot');
 // Crear el primer chatbot para "Marca"
 const fs = require('fs');
 
-// Definir rutas de archivo para cada número
-const SESSION_FILE_PATH_1 = './whatsapp-session-1.json';
-const SESSION_FILE_PATH_2 = './whatsapp-session-2.json';
+const path = require('path');
 
-// Cargar la sesión guardada si existe (primer número)
-let sessionData1 = null;
-if (fs.existsSync(SESSION_FILE_PATH_1)) {
-  sessionData1 = require(SESSION_FILE_PATH_1);
-}
+// Función para manejar la carga o creación de una sesión
+const createOrLoadSession = async (sessionName, handleMessage) => {
+  const sessionPath = path.join(__dirname, `${sessionName}-session.json`);
 
-// Cargar la sesión guardada si existe (segundo número)
-let sessionData2 = null;
-if (fs.existsSync(SESSION_FILE_PATH_2)) {
-  sessionData2 = require(SESSION_FILE_PATH_2);
-}
+  // Verifica si ya existe una sesión guardada
+  if (fs.existsSync(sessionPath)) {
+    const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
 
+    // Carga la sesión existente
+    venom.create(sessionName, (base64Qr, asciiQR, attempt, urlCode) => {
+      console.log(`QR Code para la sesión ${sessionName}:`, base64Qr);
+    }, (statusSession) => {
+      console.log(`Estado de la sesión ${sessionName}:`, statusSession);
+    }, { session: sessionData })
+    .then(client => {
+      setupClient(client, handleMessage);
+    })
+    .catch(error => {
+      console.error(`Error al cargar la sesión ${sessionName}:`, error);
+    });
+  } else {
+
+    
 venom
-  .create(
-    {
-      session: 'clubflor-session1', // Nombre de la sesión
-      multidevice: true, // Si quieres habilitar el modo multidispositivo
-      headless: true, // Para evitar que abra una ventana del navegador
-      folderNameToken: 'tokens', // Directorio donde se guardarán los tokens
-      sessionData: sessionData1, // Cargar la sesión si existe
-    },
-    (base64Qr, asciiQR, attempts, urlCode) => {
-      console.log(asciiQR); // Mostrar el código QR en la consola para escanear
-    },
-    undefined,
-    { logQR: false } // Desactiva el log para no mostrar el QR en consola si no lo necesitas
-    
-  )
-  .then((client) => startClubFlorBot(client))
-  .catch((error) => {
-    console.log('Error al iniciar el primer bot:', error);
-  });
- 
+.create(
+  {
+    session: sessionName, // Nombre de la sesión
+    multidevice: true, // Si quieres habilitar el modo multidispositivo
+    headless: true, // Para evitar que abra una ventana del navegador
+    folderNameToken: 'tokens', // Directorio donde se guardarán los tokens
+    sessionData: sessionData1, // Cargar la sesión si existe
+  },
+  (base64Qr, asciiQR, attempt, urlCode) => {
+    console.log(`QR Code para la sesión ${sessionName}:`, base64Qr);
+  }, (statusSession) => {
+    console.log(`Estado de la sesión1 ${sessionName}:`, statusSession);
+  },
+  undefined,
+  { logQR: false } // Desactiva el log para no mostrar el QR en consola si no lo necesitas
+  
+)
+.then((client) => startClubFlorBot(client))
+.catch((error) => {
+  console.log('Error al iniciar el primer bot:', error);
+});
+   
+  }
+};
 
- 
-  venom
-  .create(
-    {
-      session: 'clubflor-session', // Nombre de la sesión
-      multidevice: true, // Si quieres habilitar el modo multidispositivo
-      headless: true, // Para evitar que abra una ventana del navegador
-      folderNameToken: 'tokens', // Directorio donde se guardarán los tokens
-      sessionData: sessionData2, // Cargar la sesión si existe
-    },
-    (base64Qr, asciiQR, attempts, urlCode) => {
-      console.log(asciiQR); // Mostrar el código QR en la consola para escanear
-    },
-    undefined,
-    { logQR: false } // Desactiva el log para no mostrar el QR en consola si no lo necesitas
-    
-  )
-  .then((client) => startClubFlorBot(client))
-  .catch((error) => {
-    console.log('Error al iniciar el segundo bot:', error);
-  });
- 
+
+// Crear o cargar las sesiones para los dos chatbots
+createOrLoadSession('clubflor-session1', handleFirstChatbotMessage);
+createOrLoadSession('clubflor-session2', handleSecondChatbotMessage);
+
+
+  
 
 // Estado de los usuarios para el chatbot interactivo
 let userSteps = {};
-
-// Función para guardar la sesión cuando el bot esté autenticado
-venom.on('session:save', (sessionData) => {
-  fs.writeFileSync(SESSION_FILE_PATH, JSON.stringify(sessionData));
-  console.log('Sesión guardada correctamente.');
-});
-
-
-// Función para manejar el primer chatbot (Marca)
-function startMarcaBot(client) {
-  client.onMessage(async (message) => {
-    if (message.body === '1' && message.isGroupMsg === false) {
-      await client.sendText(message.from, 'Validación exitosa');
-    } else if (message.body.toLowerCase().includes('hola')) {
-      await client.sendText(message.from, 'Hola, marca 1 para validar.');
-    }
-  });
-}
-
 // Función para manejar el segundo chatbot (Club flor)
 function startClubFlorBot(client) {
 

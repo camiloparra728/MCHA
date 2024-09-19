@@ -1,5 +1,5 @@
 {
-  "name": "whatsapp-bot",
+  "name": "mcha",
   "version": "1.0.0",
   "description": "flor",
   "main": "app.js",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "fs": "^0.0.1-security",
-    "venom-bot": "^4.0.0"
+    "venom-bot": "^4.3.7"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
