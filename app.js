@@ -23,9 +23,9 @@ const createOrLoadSession = async (sessionName, handleMessage) => {
 
     // Carga la sesión existente
     venom.create(sessionName, (base64Qr, asciiQR, attempt, urlCode) => {
-      console.log(`QR Code para la sesión ${sessionName}:`, base64Qr);
+       console.log(`QR Code para la sesión ${sessionName}:`, base64Qr);
     }, (statusSession) => {
-      console.log(`Estado de la sesión ${sessionName}:`, statusSession);
+      // console.log(`Estado de la sesión ${sessionName}:`, statusSession);
     }, { session: sessionData })
     .then(client => {
       setupClient(client, handleMessage);
@@ -48,7 +48,7 @@ venom
   (base64Qr, asciiQR, attempt, urlCode) => {
     console.log(`QR Code para la sesión ${sessionName}:`, base64Qr);
   }, (statusSession) => {
-    console.log(`Estado de la sesión1 ${sessionName}:`, statusSession);
+    //console.log(`Estado de la sesión1 ${sessionName}:`, statusSession);
   },
   undefined,
   { logQR: false } // Desactiva el log para no mostrar el QR en consola si no lo necesitas
@@ -79,14 +79,11 @@ function startClubFlorBot(client) {
  
 client.onStateChange((state) => {
     if (state === 'CONNECTED') {
-        console.log('Conectado exitosamente!');
+        //console.log('Conectado exitosamente!');
     }
 });
 
-client.getQrCode().then((qr) => {
-    fs.writeFileSync('qr-code.png', qr);  // Guarda el QR en un archivo
-    console.log('Código QR guardado en qr-code.png');
-});
+
 
   client.onMessage(async (message) => {
     const user = message.from;
