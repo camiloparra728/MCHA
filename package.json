@@ -1,0 +1,18 @@
+{
+  "name": "whatsapp-bot",
+  "version": "1.0.0",
+  "description": "flor",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"  // Para desarrollo continuo
+  },
+  "dependencies": {
+    "venom-bot": "^4.0.0"  // La versión de venom-bot que estés usando
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"  // Para recargar automáticamente el bot en modo desarrollo
+  },
+  "author": "",
+  "license": "ISC"
+}
