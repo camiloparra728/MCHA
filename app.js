@@ -12,7 +12,7 @@ const fs = require('fs');
 // git push heroku main   
 // heroku logs --tail
 //git remote set-url origin https://github.com/camiloparra728/MCHA.git
-
+//heroku buildpacks:set heroku/nodejs
 
 const startClubFlorBot2 = addKeyword(['hola', 'flor'])
     .addAnswer('¡Hola! Bienvenido al *Club Flor*. Estoy aquí para ayudarte.')

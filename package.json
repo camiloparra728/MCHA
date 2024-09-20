@@ -2,7 +2,8 @@
     "name": "base-bailey-memory",
     "version": "1.0.0",
     "engines": {
-        "node": "v18.18.0"
+        "node": "v18.18.0",
+           "npm": "9.8.1"
       },
     "description": "",
     "main": "app.js",
