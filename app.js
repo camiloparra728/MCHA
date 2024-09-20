@@ -3,8 +3,8 @@ const { createBot, createProvider, createFlow, addKeyword } = require('@bot-what
 const QRPortalWeb = require('@bot-whatsapp/portal')
 const BaileysProvider = require('@bot-whatsapp/provider/baileys')
 const MockAdapter = require('@bot-whatsapp/database/mock')
- 
-
+const path = require('path');
+const fs = require('fs');
 // git add .
 // git commit -m "Initial commit"
 
@@ -12,20 +12,42 @@ const MockAdapter = require('@bot-whatsapp/database/mock')
 // git push heroku main   
 // heroku logs --tail
 //git remote set-url origin https://github.com/camiloparra728/MCHA.git
+
+
+const startClubFlorBot2 = addKeyword(['hola', 'flor'])
+    .addAnswer('¡Hola! Bienvenido al *Club Flor*. Estoy aquí para ayudarte.')
+    .addAnswer('¿Cuál es tu nombre?', { capture: true }, async (ctx, { flowDynamic }) => {
+        userSteps[ctx.from] = { step: 1, name: ctx.body };
+        await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel) y la cantidad en GR:');
+    })
+    .addAnswer('Proporciona tu dirección (Apartamento/Torre/Casa):', { capture: true }, async (ctx, { flowDynamic }) => {
+        userSteps[ctx.from].product = ctx.body;
+        await flowDynamic('Comparte tu ubicación GPS:');
+    })
+    .addAnswer('¿Método de pago (NEQUI o DAVIPLATA)?', { capture: true }, async (ctx, { flowDynamic }) => {
+        userSteps[ctx.from].location = ctx.body;
+        await flowDynamic('Proporciona el número de contacto:');
+    })
+    .addAnswer('Envía el comprobante de pago. Nuestro asesor te contactará pronto.', { capture: true }, (ctx) => {
+        userSteps[ctx.from].paymentMethod = ctx.body;
+        console.log('Datos del usuario:', userSteps[ctx.from]);
+        userSteps[ctx.from] = { step: 1 };  // Resetea el estado del usuario
+    });
+
 const startClubFlorBot = () => {
     return addKeyword(['hola', 'menu'])
         .addAnswer('¡Hola! Bienvenido al *Club Flor*. Estoy aquí para ayudarte.')
-        .addAnswer('¿Cuál es tu nombre?', { capture: true }, (ctx, { flowDynamic }) => {
+        .addAnswer('¿Cuál es tu nombre?', { capture: true }, async (ctx, { flowDynamic }) => {
             userSteps[ctx.from] = { step: 1, name: ctx.body };
-            flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel) y la cantidad en GR:');
+            await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel) y la cantidad en GR:');
         })
-        .addAnswer('Por favor, proporciona tu dirección (Apartamento/Torre/Casa):', { capture: true }, (ctx, { flowDynamic }) => {
+        .addAnswer('Por favor, proporciona tu dirección (Apartamento/Torre/Casa):', { capture: true }, async (ctx, { flowDynamic }) => {
             userSteps[ctx.from].product = ctx.body;
-            flowDynamic('Por favor, comparte tu ubicación GPS:');
+            await flowDynamic('Por favor, comparte tu ubicación GPS:');
         })
-        .addAnswer('¿Cuál es tu método de pago (NEQUI o DAVIPLATA)?', { capture: true }, (ctx, { flowDynamic }) => {
+        .addAnswer('¿Cuál es tu método de pago (NEQUI o DAVIPLATA)?', { capture: true }, async (ctx, { flowDynamic }) => {
             userSteps[ctx.from].location = ctx.body;
-            flowDynamic('Por favor, proporciona el número de contacto:');
+            await flowDynamic('Por favor, proporciona el número de contacto:');
         })
         .addAnswer('Envía el comprobante de pago. Nuestro asesor te contactará pronto.', { capture: true }, (ctx) => {
             userSteps[ctx.from].paymentMethod = ctx.body;
@@ -52,12 +74,11 @@ const createOrLoadSession = async (sessionName) => {
         });
     }
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([startClubFlorBot])
-    const adapterProvider = createProvider(BaileysProvider)
+    const adapterFlow = createFlow([startClubFlorBot2]) 
 
     createBot({
         flow: adapterFlow,
-        provider: adapterProvider,
+        provider: baileysProvider,
         database: adapterDB,
     })
 
