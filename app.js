@@ -1,4 +1,9 @@
-const venom = require('venom-bot');
+const { createBot, createProvider, createFlow, addKeyword } = require('@bot-whatsapp/bot')
+
+const QRPortalWeb = require('@bot-whatsapp/portal')
+const BaileysProvider = require('@bot-whatsapp/provider/baileys')
+const MockAdapter = require('@bot-whatsapp/database/mock')
+ 
 
 // git add .
 // git commit -m "Initial commit"
@@ -7,157 +12,75 @@ const venom = require('venom-bot');
 // git push heroku main   
 // heroku logs --tail
 //git remote set-url origin https://github.com/camiloparra728/MCHA.git
-
-
-// Crear el primer chatbot para "Marca"
-const fs = require('fs');
-
-const path = require('path');
-
-// Función para manejar la carga o creación de una sesión
-const createOrLoadSession = async (sessionName, handleMessage) => {
-  const sessionPath = path.join(__dirname, `${sessionName}-session.json`);
-
-  // Verifica si ya existe una sesión guardada
-  if (fs.existsSync(sessionPath)) {
-    const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
-
-    // Carga la sesión existente
-    venom.create(sessionName, 
-      (base64Qr, asciiQR, attempt, urlCode) => {
-       console.log(`QR Code para la sesión ${sessionName}:`, base64Qr);
-    }, (statusSession) => {
-      // console.log(`Estado de la sesión ${sessionName}:`, statusSession);
-    },{
-      session: sessionData ,
-      headless: true, // Ejecutar en modo headless (sin interfaz gráfica)
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process', // (Puede que se requiera en algunas implementaciones)
-        '--disable-gpu'
-      ],
-    },)
-    .then(client => {
-      startClubFlorBot(client)
-    })
-    .catch(error => {
-      console.error(`Error al cargar la sesión ${sessionName}:`, error);
-    });
-  } else {
-
-    
-venom
-.create(
-  {
-    session: sessionName, // Nombre de la sesión
-    multidevice: true, // Si quieres habilitar el modo multidispositivo
-    headless: true, // Para evitar que abra una ventana del navegador
-    folderNameToken: 'tokens', // Directorio donde se guardarán los tokens 
-  },
-  (base64Qr, asciiQR, attempt, urlCode) => {
-    console.log(`QR Code para la sesión ${sessionName}:`, base64Qr);
-  }, (statusSession) => {
-    //console.log(`Estado de la sesión1 ${sessionName}:`, statusSession);
-  },
-  undefined,
-  { logQR: false } // Desactiva el log para no mostrar el QR en consola si no lo necesitas
-  
-)
-.then((client) => startClubFlorBot(client))
-.catch((error) => {
-  console.log('Error al iniciar el primer bot:', error);
-});
-   
-  }
+const startClubFlorBot = () => {
+    return addKeyword(['hola', 'menu'])
+        .addAnswer('¡Hola! Bienvenido al *Club Flor*. Estoy aquí para ayudarte.')
+        .addAnswer('¿Cuál es tu nombre?', { capture: true }, (ctx, { flowDynamic }) => {
+            userSteps[ctx.from] = { step: 1, name: ctx.body };
+            flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel) y la cantidad en GR:');
+        })
+        .addAnswer('Por favor, proporciona tu dirección (Apartamento/Torre/Casa):', { capture: true }, (ctx, { flowDynamic }) => {
+            userSteps[ctx.from].product = ctx.body;
+            flowDynamic('Por favor, comparte tu ubicación GPS:');
+        })
+        .addAnswer('¿Cuál es tu método de pago (NEQUI o DAVIPLATA)?', { capture: true }, (ctx, { flowDynamic }) => {
+            userSteps[ctx.from].location = ctx.body;
+            flowDynamic('Por favor, proporciona el número de contacto:');
+        })
+        .addAnswer('Envía el comprobante de pago. Nuestro asesor te contactará pronto.', { capture: true }, (ctx) => {
+            userSteps[ctx.from].paymentMethod = ctx.body;
+            console.log('Datos del usuario:', userSteps[ctx.from]);
+            userSteps[ctx.from] = { step: 1 };  // Resetea el estado del usuario
+        });
 };
 
 
+// Función para crear o cargar la sesión del chatbot
+const createOrLoadSession = async (sessionName) => {
+    const sessionPath = path.join(__dirname, `${sessionName}-session.json`);
 
-// Crear o cargar las sesiones para los dos chatbots
-createOrLoadSession('clubflor-session1');
-createOrLoadSession('clubflor-session2');
+    let baileysProvider=createProvider(BaileysProvider);
+    if (fs.existsSync(sessionPath)) {
+        const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
+        baileysProvider = createProvider(BaileysProvider, {
+            session: sessionData,  // Utilizamos los datos de la sesión almacenada
+            authPath: sessionPath, // Ruta para almacenar la sesión de Baileys
+        });
+    } else {
+        baileysProvider = createProvider(BaileysProvider, {
+            authPath: sessionPath,  // Ruta para almacenar la sesión de Baileys
+        });
+    }
+    const adapterDB = new MockAdapter()
+    const adapterFlow = createFlow([startClubFlorBot])
+    const adapterProvider = createProvider(BaileysProvider)
 
+    createBot({
+        flow: adapterFlow,
+        provider: adapterProvider,
+        database: adapterDB,
+    })
 
-  
+    QRPortalWeb()
 
-// Estado de los usuarios para el chatbot interactivo
-let userSteps = {};
-// Función para manejar el segundo chatbot (Club flor)
-function startClubFlorBot(client) {
+    // Mostrar el QR en la terminal
+    baileysProvider.on('qr', (qrCode) => {
+        console.log('QR Code generado. Escanéalo en tu dispositivo.');
+        qrcode.generate(qrCode, { small: true });  // Esto imprime el QR en la terminal
+    });
 
+    // Mostrar el estado cuando el bot esté listo
+    baileysProvider.on('ready', () => {
+        console.log('Bot listo para enviar y recibir mensajes.');
+    });
+
+    // Manejar error de autenticación
+    baileysProvider.on('auth_failure', (msg) => {
+        console.error('Error de autenticación:', msg);
+    });
+};
  
-client.onStateChange((state) => {
-    if (state === 'CONNECTED') {
-        //console.log('Conectado exitosamente!');
-    }
-});
-
-client.on('session:save', (session) => {
-  console.log(`Sesión guardada:`, session);
-  fs.writeFileSync(`${session.sessionName}-session.json`, JSON.stringify(session));
-});
-
-  client.onMessage(async (message) => {
-    const user = message.from;
-
-    // Inicializar los pasos del usuario si es la primera vez que interactúa
-    if (!userSteps[user]) {
-      userSteps[user] = { step: 1 };
-    }
-
-    const currentStep = userSteps[user].step;
-
-    // Paso 1: Solicitar nombre
-    if (currentStep === 1) {
-      await client.sendText(user, 'Por favor, indica el nombre de quien recibe:');
-      userSteps[user].step = 2;
-
-    // Paso 2: Solicitar tipo de producto y cantidad
-    } else if (currentStep === 2) {
-      userSteps[user].name = message.body; // Guardar el nombre del cliente
-      await client.sendText(user, 'Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel) y la cantidad en GR:');
-      userSteps[user].step = 3;
-
-    // Paso 3: Solicitar dirección
-    } else if (currentStep === 3) {
-      userSteps[user].product = message.body; // Guardar el producto y la cantidad
-      await client.sendText(user, 'Por favor, indica la dirección (Apartamento/Torre/Casa):');
-      userSteps[user].step = 4;
-
-    // Paso 4: Solicitar ubicación GPS
-    } else if (currentStep === 4) {
-      userSteps[user].address = message.body; // Guardar la dirección
-      await client.sendText(user, 'Por favor, comparte tu ubicación GPS del domi 📍:');
-      userSteps[user].step = 5;
-
-    // Paso 5: Solicitar método de pago
-    } else if (currentStep === 5) {
-      userSteps[user].location = message.body; // Guardar la ubicación GPS
-      await client.sendText(user, '¿Cuál es tu método de pago (NEQUI o DAVIPLATA)?:');
-      userSteps[user].step = 6;
-
-    // Paso 6: Solicitar el número de contacto
-    } else if (currentStep === 6) {
-      userSteps[user].paymentMethod = message.body; // Guardar el método de pago
-      await client.sendText(user, 'Por favor, proporciona el número de contacto:');
-      userSteps[user].step = 7;
-
-    // Paso 7: Solicitar comprobante de pago
-    } else if (currentStep === 7) {
-      userSteps[user].contactNumber = message.body; // Guardar el número de contacto
-      await client.sendText(user, 'Envía el comprobante de pago. En breve, nuestro asesor te contactará para finalizar el proceso.');
-      userSteps[user].step = 8;
-
-    // Final: Confirmación y finalización
-    } else if (currentStep === 8) {
-      await client.sendText(user, '¡Gracias! Hemos recibido tus datos y el comprobante. Un asesor se pondrá en contacto contigo pronto.');
-      // Resetear el estado del usuario para futuros pedidos
-      userSteps[user] = { step: 1 };
-    }
-  });
-}
+ 
+createOrLoadSession('clubflor-3229765480');
+    // createOrLoadSession('clubflor-3229765480');
+    // createOrLoadSession('clubflor-3229756712');
