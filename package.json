@@ -25,7 +25,8 @@
     },
     "devDependencies": {
         "eslint": "^9.11.0",
-        "eslint-plugin-bot-whatsapp": "latest"
+        "eslint-plugin-bot-whatsapp": "latest",
+        "globals": "^15.9.0"
     },
     "author": "",
     "license": "ISC"
