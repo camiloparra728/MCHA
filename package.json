@@ -10,7 +10,8 @@
     "scripts": {
         "prestart": "npx eslint . --no-ignore",
         "pre-copy": "cd .. && npm run  copy.lib base-baileys-memory",
-        "start": "node app.js"
+        "start": "node app.js",
+        "heroku": "git add . && git commit -m 'Initial commit' && git push -u origin main && git push heroku main"
     },
     "keywords": [],
     "dependencies": {
