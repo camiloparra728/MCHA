@@ -2,13 +2,25 @@ const { createBot, createProvider, createFlow, addKeyword } = require('@bot-what
 const QRPortalWeb = require('@bot-whatsapp/portal');
 const BaileysProvider = require('@bot-whatsapp/provider/baileys');
 const MockAdapter = require('@bot-whatsapp/database/mock');
+const fs = require('fs');
+const path = require('path');
 const userSteps = {};
 
+// Función para definir el almacenamiento de las sesiones de forma separada
+const createBaileysProviderWithStorage = (storagePath) => {
+    if (!fs.existsSync(storagePath)) {
+        fs.mkdirSync(storagePath, { recursive: true });
+    }
+    return createProvider(BaileysProvider, {
+        auth: { storePath: storagePath }, // Define el almacenamiento personalizado
+    });
+};
+
 // Flujos y configuraciones para el Club Flor
-const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola', 'Buenas', 'buenas','#clubflor'])
+const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola', 'Buenas', 'buenas', '#clubflor'])
     .addAnswer('¡Hola! Bienvenido al *Club Flor*. Estoy aquí para ayudarte.')
     .addAnswer('¿Cuál es tu nombre?', { capture: true }, async (ctx, { flowDynamic }) => {
-        console.log('Nombre recibido:', ctx.body); 
+        console.log('Nombre recibido:', ctx.body);
         userSteps[ctx.from] = { step: 1, name: ctx.body };
         await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel / Green Poison / Gorila White / Hash Fruit / Gelato 33 / Gorila Rainbow):');
     })
@@ -40,8 +52,8 @@ const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola', 'Buenas', 'buenas'
 const main = async () => {
     const adapterDB = new MockAdapter();
 
-    // Proveedor 1 (primer número de WhatsApp)
-    const provider1 = createProvider(BaileysProvider);
+    // Proveedor 1 (primer número de WhatsApp con su propio almacenamiento)
+    const provider1 = createBaileysProviderWithStorage(path.resolve(__dirname, 'sessions/whatsapp1'));
     const flow1 = createFlow([startClubFlorBot2]);
     createBot({
         flow: flow1,
@@ -49,16 +61,16 @@ const main = async () => {
         database: adapterDB,
     });
 
-    // Proveedor 2 (segundo número de WhatsApp)
-    const provider2 = createProvider(BaileysProvider);
-    const flow2 = createFlow([startClubFlorBot2]); // O puedes crear otro flujo si es diferente para el segundo número
+    // Proveedor 2 (segundo número de WhatsApp con su propio almacenamiento)
+    const provider2 = createBaileysProviderWithStorage(path.resolve(__dirname, 'sessions/whatsapp2'));
+    const flow2 = createFlow([startClubFlorBot2]); // Puedes usar el mismo flujo o crear otro diferente
     createBot({
         flow: flow2,
         provider: provider2,
         database: adapterDB,
     });
 
-    // Muestra ambos códigos QR en el portal web
+    // Muestra ambos códigos QR en el portal web para escanearlos
     QRPortalWeb();
 };
 
