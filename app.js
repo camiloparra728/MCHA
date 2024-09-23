@@ -5,7 +5,6 @@ const BaileysProvider = require('@bot-whatsapp/provider/baileys')
 const MockAdapter = require('@bot-whatsapp/database/mock')
 const userSteps = {};
 
-const userSteps = {};
 
 const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola'])
     .addAnswer('¡Hola! Bienvenido al *Club Flor*. Estoy aquí para ayudarte.')
@@ -41,7 +40,7 @@ const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola'])
         userSteps[ctx.from] = { step: 1 };  // Resetea el estado del usuario
     });
 
-    
+
 const main = async () => {
     const adapterDB = new MockAdapter()
     const adapterFlow = createFlow([startClubFlorBot2])
