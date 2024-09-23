@@ -12,7 +12,7 @@ const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola'])
         userSteps[ctx.from] = { step: 1, name: ctx.body };
         await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel):');
     })
-    .addAnswer('Elige el tipo de producto:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 1 }, async (ctx, { flowDynamic }) => {
+    .addAnswer('Y la cantidad en GR:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 1 }, async (ctx, { flowDynamic }) => {
         console.log('Producto recibido:', ctx.body); // Log del producto recibido
         userSteps[ctx.from].product = ctx.body;
         userSteps[ctx.from].step = 2; // Avanza al siguiente paso
