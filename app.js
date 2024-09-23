@@ -5,7 +5,7 @@ const BaileysProvider = require('@bot-whatsapp/provider/baileys')
 const MockAdapter = require('@bot-whatsapp/database/mock')
 const userSteps = {};
 
-const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola'])
+const startClubFlorBot2 = addKeyword('*')
     .addAnswer('¡Hola! Bienvenido al *Club Flor*. Estoy aquí para ayudarte.')
     .addAnswer('¿Cuál es tu nombre?', { capture: true }, async (ctx, { flowDynamic }) => {
         console.log('Nombre recibido:', ctx.body); // Log del nombre recibido
