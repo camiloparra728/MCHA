@@ -21,22 +21,16 @@ const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola'])
     .addAnswer('Proporciona dirección de envío:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 2 }, async (ctx, { flowDynamic }) => {
         console.log('Dirección recibida:', ctx.body); // Log de la dirección recibida
         userSteps[ctx.from].address = ctx.body;
-        userSteps[ctx.from].step = 3; // Avanza al siguiente paso
-        await flowDynamic('Comparte tu ubicación GPS:');
-    })
-    .addAnswer('Comparte tu ubicación GPS:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 3 }, async (ctx, { flowDynamic }) => {
-        console.log('Ubicación recibida:', ctx.body); // Log de la ubicación recibida
-        userSteps[ctx.from].location = ctx.body;
         userSteps[ctx.from].step = 4; // Avanza al siguiente paso
-        await flowDynamic('¿Método de pago (NEQUI o DAVIPLATA)?');
+        await flowDynamic('¿Método de pago (NEQUI o DAVIPLATA) ? ');
     })
-    .addAnswer('¿Método de pago (NEQUI o DAVIPLATA)?', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 4 }, async (ctx, { flowDynamic }) => {
+    .addAnswer('Número de envío al 3156163610', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 4 }, async (ctx, { flowDynamic }) => {
         console.log('Método de pago recibido:', ctx.body); // Log del método de pago recibido
         userSteps[ctx.from].paymentMethod = ctx.body;
         userSteps[ctx.from].step = 5; // Avanza al siguiente paso
-        await flowDynamic('Proporciona el número de contacto:');
+        await flowDynamic('Envía el comprobante de pago al 3156163610.');
     })
-    .addAnswer('Proporciona el número de contacto:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 5 }, (ctx) => {
+    .addAnswer('Nuestro asesor te contactará pronto.', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 5 }, (ctx) => {
         console.log('Número de contacto recibido:', ctx.body); // Log del número de contacto recibido
         userSteps[ctx.from].contactNumber = ctx.body;
         console.log('Datos del usuario:', userSteps[ctx.from]); // Log de todos los datos del usuario
