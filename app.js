@@ -11,24 +11,24 @@ const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola'])
     .addAnswer('¿Cuál es tu nombre?', { capture: true }, async (ctx, { flowDynamic }) => {
         console.log('Nombre recibido:', ctx.body);
         userSteps[ctx.from] = { step: 1, name: ctx.body };
-        await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel) y la cantidad en GR:');
+        await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel)');
     })
-    .addAnswer('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel):', { capture: true }, async (ctx, { flowDynamic }) => {
+    .addAnswer('Y la cantidad en GR:', { capture: true }, async (ctx, { flowDynamic }) => {
         console.log('Producto recibido:', ctx.body);
         userSteps[ctx.from].product = ctx.body;
         await flowDynamic('Proporciona tu dirección (Apartamento/Torre/Casa):');
     })
-    .addAnswer('Proporciona tu dirección (Apartamento/Torre/Casa):', { capture: true }, async (ctx, { flowDynamic }) => {
+    .addAnswer('Proporciona dirección de envío (Apartamento/Torre/Casa):', { capture: true }, async (ctx, { flowDynamic }) => {
         console.log('Dirección recibida:', ctx.body);
         userSteps[ctx.from].address = ctx.body;
         await flowDynamic('Comparte tu ubicación GPS:');
     })
-    .addAnswer('Comparte tu ubicación GPS:', { capture: true }, async (ctx, { flowDynamic }) => {
+    .addAnswer('Si es complicada envia link de GPS Maps o ubicación:', { capture: true }, async (ctx, { flowDynamic }) => {
         console.log('Ubicación recibida:', ctx.body);
         userSteps[ctx.from].location = ctx.body;
         await flowDynamic('¿Método de pago (NEQUI o DAVIPLATA)?');
     })
-    .addAnswer('¿Método de pago (NEQUI o DAVIPLATA)?', { capture: true }, async (ctx, { flowDynamic }) => {
+    .addAnswer('3156163610', { capture: true }, async (ctx, { flowDynamic }) => {
         console.log('Método de pago recibido:', ctx.body);
         userSteps[ctx.from].paymentMethod = ctx.body;
         await flowDynamic('Proporciona el número de contacto:');
