@@ -18,17 +18,17 @@ const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola'])
         userSteps[ctx.from].step = 2; // Avanza al siguiente paso
         await flowDynamic('Proporciona tu dirección (Apartamento/Torre/Casa):');
     })
-    .addAnswer('Proporciona dirección de envío:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 2 }, async (ctx, { flowDynamic }) => {
+    .addAnswer('Indicaciones:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 2 }, async (ctx, { flowDynamic }) => {
         console.log('Dirección recibida:', ctx.body); // Log de la dirección recibida
         userSteps[ctx.from].address = ctx.body;
         userSteps[ctx.from].step = 4; // Avanza al siguiente paso
-        await flowDynamic('¿Método de pago (NEQUI o DAVIPLATA) ? ');
+        await flowDynamic('¿Método de pago? ');
     })
-    .addAnswer('Número de envío al 3156163610', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 4 }, async (ctx, { flowDynamic }) => {
+    .addAnswer('Escribe (NEQUI o DAVIPLATA)', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 4 }, async (ctx, { flowDynamic }) => {
         console.log('Método de pago recibido:', ctx.body); // Log del método de pago recibido
         userSteps[ctx.from].paymentMethod = ctx.body;
         userSteps[ctx.from].step = 5; // Avanza al siguiente paso
-        await flowDynamic('Envía el comprobante de pago al 3156163610.');
+        await flowDynamic('Realiza envío del pago 3156163610 y el comprobante de pago.');
     })
     .addAnswer('Nuestro asesor te contactará pronto.', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 5 }, (ctx) => {
         console.log('Número de contacto recibido:', ctx.body); // Log del número de contacto recibido
