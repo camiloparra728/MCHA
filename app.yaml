@@ -1,0 +1,4 @@
+runtime: nodejs18 # Cambia a la versión que estés utilizando
+handlers:
+- url: /.*
+  script: auto

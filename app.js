@@ -3,105 +3,77 @@ const { createBot, createProvider, createFlow, addKeyword } = require('@bot-what
 const QRPortalWeb = require('@bot-whatsapp/portal')
 const BaileysProvider = require('@bot-whatsapp/provider/baileys')
 const MockAdapter = require('@bot-whatsapp/database/mock')
-const path = require('path');
-const fs = require('fs');
-// git add .
-// git commit -m "Initial commit"
 
-// git push -u origin main
-// git push heroku main   
-// heroku logs --tail
-//git remote set-url origin https://github.com/camiloparra728/MCHA.git
-//heroku buildpacks:set heroku/nodejs
+const flowSecundario = addKeyword(['2', 'siguiente']).addAnswer(['📄 Aquí tenemos el flujo secundario'])
 
-const startClubFlorBot2 = addKeyword(['hola', 'flor'])
-    .addAnswer('¡Hola! Bienvenido al *Club Flor*. Estoy aquí para ayudarte.')
-    .addAnswer('¿Cuál es tu nombre?', { capture: true }, async (ctx, { flowDynamic }) => {
-        userSteps[ctx.from] = { step: 1, name: ctx.body };
-        await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel) y la cantidad en GR:');
-    })
-    .addAnswer('Proporciona tu dirección (Apartamento/Torre/Casa):', { capture: true }, async (ctx, { flowDynamic }) => {
-        userSteps[ctx.from].product = ctx.body;
-        await flowDynamic('Comparte tu ubicación GPS:');
-    })
-    .addAnswer('¿Método de pago (NEQUI o DAVIPLATA)?', { capture: true }, async (ctx, { flowDynamic }) => {
-        userSteps[ctx.from].location = ctx.body;
-        await flowDynamic('Proporciona el número de contacto:');
-    })
-    .addAnswer('Envía el comprobante de pago. Nuestro asesor te contactará pronto.', { capture: true }, (ctx) => {
-        userSteps[ctx.from].paymentMethod = ctx.body;
-        console.log('Datos del usuario:', userSteps[ctx.from]);
-        userSteps[ctx.from] = { step: 1 };  // Resetea el estado del usuario
-    });
+const flowDocs = addKeyword(['doc', 'documentacion', 'documentación']).addAnswer(
+    [
+        '📄 Aquí encontras las documentación recuerda que puedes mejorarla',
+        'https://bot-whatsapp.netlify.app/',
+        '\n*2* Para siguiente paso.',
+    ],
+    null,
+    null,
+    [flowSecundario]
+)
 
-const startClubFlorBot = () => {
-    return addKeyword(['hola', 'menu'])
-        .addAnswer('¡Hola! Bienvenido al *Club Flor*. Estoy aquí para ayudarte.')
-        .addAnswer('¿Cuál es tu nombre?', { capture: true }, async (ctx, { flowDynamic }) => {
-            userSteps[ctx.from] = { step: 1, name: ctx.body };
-            await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel) y la cantidad en GR:');
-        })
-        .addAnswer('Por favor, proporciona tu dirección (Apartamento/Torre/Casa):', { capture: true }, async (ctx, { flowDynamic }) => {
-            userSteps[ctx.from].product = ctx.body;
-            await flowDynamic('Por favor, comparte tu ubicación GPS:');
-        })
-        .addAnswer('¿Cuál es tu método de pago (NEQUI o DAVIPLATA)?', { capture: true }, async (ctx, { flowDynamic }) => {
-            userSteps[ctx.from].location = ctx.body;
-            await flowDynamic('Por favor, proporciona el número de contacto:');
-        })
-        .addAnswer('Envía el comprobante de pago. Nuestro asesor te contactará pronto.', { capture: true }, (ctx) => {
-            userSteps[ctx.from].paymentMethod = ctx.body;
-            console.log('Datos del usuario:', userSteps[ctx.from]);
-            userSteps[ctx.from] = { step: 1 };  // Resetea el estado del usuario
-        });
-};
+const flowTuto = addKeyword(['tutorial', 'tuto']).addAnswer(
+    [
+        '🙌 Aquí encontras un ejemplo rapido',
+        'https://bot-whatsapp.netlify.app/docs/example/',
+        '\n*2* Para siguiente paso.',
+    ],
+    null,
+    null,
+    [flowSecundario]
+)
 
+const flowGracias = addKeyword(['gracias', 'grac']).addAnswer(
+    [
+        '🚀 Puedes aportar tu granito de arena a este proyecto',
+        '[*opencollective*] https://opencollective.com/bot-whatsapp',
+        '[*buymeacoffee*] https://www.buymeacoffee.com/leifermendez',
+        '[*patreon*] https://www.patreon.com/leifermendez',
+        '\n*2* Para siguiente paso.',
+    ],
+    null,
+    null,
+    [flowSecundario]
+)
 
-// Función para crear o cargar la sesión del chatbot
-const createOrLoadSession = async (sessionName) => {
-    const sessionPath = path.join(__dirname, `${sessionName}-session.json`);
+const flowDiscord = addKeyword(['discord']).addAnswer(
+    ['🤪 Únete al discord', 'https://link.codigoencasa.com/DISCORD', '\n*2* Para siguiente paso.'],
+    null,
+    null,
+    [flowSecundario]
+)
 
-    let baileysProvider=createProvider(BaileysProvider);
-    if (fs.existsSync(sessionPath)) {
-        const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
-        baileysProvider = createProvider(BaileysProvider, {
-            session: sessionData,  // Utilizamos los datos de la sesión almacenada
-            authPath: sessionPath, // Ruta para almacenar la sesión de Baileys
-        });
-    } else {
-        baileysProvider = createProvider(BaileysProvider, {
-            authPath: sessionPath,  // Ruta para almacenar la sesión de Baileys
-        });
-    }
+const flowPrincipal = addKeyword(['hola', 'ole', 'alo'])
+    .addAnswer('🙌 Hola bienvenido a este *Chatbot*')
+    .addAnswer(
+        [
+            'te comparto los siguientes links de interes sobre el proyecto',
+            '👉 *doc* para ver la documentación',
+            '👉 *gracias*  para ver la lista de videos',
+            '👉 *discord* unirte al discord',
+        ],
+        null,
+        null,
+        [flowDocs, flowGracias, flowTuto, flowDiscord]
+    )
+
+const main = async () => {
     const adapterDB = new MockAdapter()
-    const adapterFlow = createFlow([startClubFlorBot2]) 
+    const adapterFlow = createFlow([flowPrincipal])
+    const adapterProvider = createProvider(BaileysProvider)
 
     createBot({
         flow: adapterFlow,
-        provider: baileysProvider,
+        provider: adapterProvider,
         database: adapterDB,
     })
 
     QRPortalWeb()
+}
 
-    // Mostrar el QR en la terminal
-    baileysProvider.on('qr', (qrCode) => {
-        console.log('QR Code generado. Escanéalo en tu dispositivo.');
-        qrcode.generate(qrCode, { small: true });  // Esto imprime el QR en la terminal
-    });
-
-    // Mostrar el estado cuando el bot esté listo
-    baileysProvider.on('ready', () => {
-        console.log('Bot listo para enviar y recibir mensajes.');
-    });
-
-    // Manejar error de autenticación
-    baileysProvider.on('auth_failure', (msg) => {
-        console.error('Error de autenticación:', msg);
-    });
-};
- 
- 
-createOrLoadSession('clubflor-3229765480');
-    // createOrLoadSession('clubflor-3229765480');
-    // createOrLoadSession('clubflor-3229756712');
+main()
