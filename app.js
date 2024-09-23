@@ -48,7 +48,7 @@ const main = async () => {
         database: adapterDB,
     })
 
-    QRPortalWeb()
+    QRPortalWeb({port:3001})
 }
 
 main()
