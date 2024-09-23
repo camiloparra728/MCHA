@@ -10,25 +10,40 @@ const startClubFlorBot2 = addKeyword(['hola', 'flor', 'Hola'])
     .addAnswer('¿Cuál es tu nombre?', { capture: true }, async (ctx, { flowDynamic }) => {
         console.log('Nombre recibido:', ctx.body); // Log del nombre recibido
         userSteps[ctx.from] = { step: 1, name: ctx.body };
-        await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel) y la cantidad en GR:');
+        await flowDynamic('Elige el tipo de producto (Amnesia / Gorila Glue / Sour Diésel):');
     })
-    .addAnswer('Proporciona tu dirección (Apartamento/Torre/Casa):', { capture: true }, async (ctx, { flowDynamic }) => {
-        console.log('Dirección recibida:', ctx.body); // Log de la dirección recibida
+    .addAnswer('Elige el tipo de producto:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 1 }, async (ctx, { flowDynamic }) => {
+        console.log('Producto recibido:', ctx.body); // Log del producto recibido
         userSteps[ctx.from].product = ctx.body;
+        userSteps[ctx.from].step = 2; // Avanza al siguiente paso
+        await flowDynamic('Proporciona tu dirección (Apartamento/Torre/Casa):');
+    })
+    .addAnswer('Proporciona dirección de envío:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 2 }, async (ctx, { flowDynamic }) => {
+        console.log('Dirección recibida:', ctx.body); // Log de la dirección recibida
+        userSteps[ctx.from].address = ctx.body;
+        userSteps[ctx.from].step = 3; // Avanza al siguiente paso
         await flowDynamic('Comparte tu ubicación GPS:');
     })
-    .addAnswer('¿Método de pago (NEQUI o DAVIPLATA)?', { capture: true }, async (ctx, { flowDynamic }) => {
+    .addAnswer('Comparte tu ubicación GPS:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 3 }, async (ctx, { flowDynamic }) => {
         console.log('Ubicación recibida:', ctx.body); // Log de la ubicación recibida
         userSteps[ctx.from].location = ctx.body;
-        await flowDynamic('Proporciona el número de contacto:');
+        userSteps[ctx.from].step = 4; // Avanza al siguiente paso
+        await flowDynamic('¿Método de pago (NEQUI o DAVIPLATA)?');
     })
-    .addAnswer('Envía el comprobante de pago al 3156163610. Nuestro asesor te contactará pronto.', { capture: true }, (ctx) => {
+    .addAnswer('¿Método de pago (NEQUI o DAVIPLATA)?', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 4 }, async (ctx, { flowDynamic }) => {
         console.log('Método de pago recibido:', ctx.body); // Log del método de pago recibido
         userSteps[ctx.from].paymentMethod = ctx.body;
+        userSteps[ctx.from].step = 5; // Avanza al siguiente paso
+        await flowDynamic('Proporciona el número de contacto:');
+    })
+    .addAnswer('Proporciona el número de contacto:', { capture: true, expected: (ctx) => userSteps[ctx.from]?.step === 5 }, (ctx) => {
+        console.log('Número de contacto recibido:', ctx.body); // Log del número de contacto recibido
+        userSteps[ctx.from].contactNumber = ctx.body;
         console.log('Datos del usuario:', userSteps[ctx.from]); // Log de todos los datos del usuario
-        userSteps[ctx.from] = { step: 1 };  // Resetea el estado del usuario
+        delete userSteps[ctx.from];  // Resetea el estado del usuario
     });
 
+    
 const main = async () => {
     const adapterDB = new MockAdapter()
     const adapterFlow = createFlow([startClubFlorBot2])
